@@ -1,12 +1,15 @@
 import express from 'express';
-
-
 const router = express.Router();
+import User from '../models/user.js';
 
-router.post('/login', (req, res) =>{
-    const { email, password } = req.body;
-    console.log(email, password);
-    return res.status(200).json({ message: 'Login successful', email, password });
-})
+import {register,login,logout} from '../controllers/userController.js';
+
+router.post('/register', register);
+router.post('/login', login);
+router.get('/logout', logout);
+
+
+
+
 
 export default router;

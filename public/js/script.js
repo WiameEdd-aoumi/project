@@ -59,6 +59,18 @@ loginForm.addEventListener('submit', async (e) => {
       console.error('Login error:', error);
       alert(error.message);
     }
+    fetch('/login', {
+      method: 'POST',
+      body: JSON.stringify(formData),
+      headers: { 'Content-Type': 'application/json' }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.redirectTo) {
+        window.location.href = data.redirectTo;
+      }
+    });
+    
   });
 
 

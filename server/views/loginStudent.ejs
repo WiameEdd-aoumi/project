@@ -1,4 +1,5 @@
 <link rel="stylesheet" href="/css/login.css">
+
     <header>
        <div><h2 class="logo">Ouiame</h2></div>
         <nav class ="navigation">
@@ -15,7 +16,8 @@
       
         <div class="form-box login">
             <h2>login</h2>
-            <form action="#" id="loginForm">
+            <form action="/api/login" id="loginForm" method="post">
+              <input type ="hidden" name ="role" value="<%= role %>">
                 <div class="input-box">
             
                     <span class="icon"><ion-icon name="mail-open"></ion-icon></span>
@@ -46,7 +48,8 @@
 
         <div class="form-box register">
             <h2>Registration</h2>
-            <form action="#">
+            <form action="/api/register" id="registerForm" method="post">
+              <input type ='hidden' name ="role" value="<%= role %>">
               <div class="input-box">
                 <span class="icon"><ion-icon name="person"></ion-icon></span>
                 <input type="text" required />
@@ -68,7 +71,7 @@
               <div class="remembetr-forget">
                 <label><input type="checkbox" /> I agree to the terms</label>
               </div>
-      
+              <input type="hidden" name="role" value="<%= role %>" />
               <button type="submit" class="btn">Register</button>
       
               <div class="login-register">
