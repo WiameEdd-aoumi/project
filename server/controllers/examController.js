@@ -1,5 +1,5 @@
-import Exam from '../models/Exam.js';
-const {Exam, Question}=require('../models/Exam.js');
+import Exam from '../models/exam.js';
+const {Exam, Question}=require('../models/exam.js');
 const crypto = require('crypto');
 exports.createExam = async (req, res) => {
     try {

@@ -19,7 +19,10 @@ app.use(session({
 }));
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:5000', // Replace with your frontend URL
+    credentials: true, // Allow credentials (cookies) to be sent
+}));
 app.use(express.json());
 app.use(express.static('public'));
 app.use(expressLayouts);
@@ -37,14 +40,12 @@ app.set('views', './server/views');
 app.use('/',mainRoute)
 app.use('/api', userRoutes);
 //home page
-app.get('/', (req, res) => {
-    res.render('index');
 
-});
+
 //handle role selzction (student or teacher)
 app.post('/role', (req, res) => {
     const role = req.body.role;
-    res.render('loginStudent', { role });
+    res.redirect(`/loginStudent?role=${role}`); // Redirect to login page with selected role
 });
 //login page (dynamic based on role)
 app.get('/loginStudent', (req, res) => {
@@ -71,7 +72,7 @@ app.get('/Sdashboard', (req, res) => {
 
 
 // Database connection
-const dbURI = 'mongodb+srv://eddaoumiwiame:oiKbrWMOlrHELlBG@cluster0.lsnipd2.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+const dbURI = 'mongodb://localhost:27017/exam_platform';
 mongoose.connect(dbURI)
   .then(() => {
     console.log('MongoDB Connected...');

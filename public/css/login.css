@@ -11,7 +11,7 @@ body{
     justify-content: center;
     align-items: center;
     min-height: 100dvh;
-    background: url('exam.jpg') no-repeat;
+    background: url('../img/exam.jpg') no-repeat;
     background-size: cover;
     background-position: center;
 }
@@ -130,6 +130,9 @@ header {
 .wrapper .form-box.login{
    transition: transform .18s ease;
    transform: translateX(0);
+   display: flex;
+    flex-direction: column;
+    justify-content: center;
 
 }
 .wrapper.active .form-box.login{
@@ -141,6 +144,30 @@ header {
     transition: transform .18s ease;
     transform: translateX(400px);
 
+    max-height: 100%;
+    overflow-y: auto;
+    padding-right: 20px;
+    border-top-right-radius: 20px;
+    border-bottom-right-radius: 20px;
+    box-shadow: 0 0 30px rgba(0, 0 ,0,5);
+    scrollbar-width: thin;
+    scrollbar-color: #061744 transparent;
+    scroll-behavior: smooth;
+
+
+}
+.wrapper .form-box.register::-webkit-scrollbar{
+    width: 6px;
+    background: transparent;
+}
+.wrapper .form-box.register::-webkit-scrollbar-thumb{
+    background: #061744;
+    border-radius: 10px;
+    box-shadow: inset 0 0 5px rgba(0, 0 ,0,5);
+}
+.wrapper .form-box.register::-webkit-scrollbar-track{
+    background: transparent;
+    box-shadow: inset 0 0 5px rgba(0, 0 ,0,5);
 }
 .wrapper.active .form-box.register{
     transition: transform .18s ease;

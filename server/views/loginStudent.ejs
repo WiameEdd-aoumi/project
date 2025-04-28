@@ -13,22 +13,21 @@
     </header>
     <div class="wrapper">
         <span class="icon-close"><ion-icon name="close"></ion-icon></span>
-      
+        
         <div class="form-box login">
             <h2>login</h2>
             <form action="/api/login" id="loginForm" method="post">
-              <input type ="hidden" name ="role" value="<%= role %>">
                 <div class="input-box">
             
                     <span class="icon"><ion-icon name="mail-open"></ion-icon></span>
-                    <input type="email" required>
+                    <input type="email" name="name" required>
                     <label>Email</label>
                     
                 </div>
                 
                 <div class="input-box">
                     <span class="icon"><ion-icon name="lock-closed"></ion-icon></span>
-                    <input type="password" required>
+                    <input type="password" name="password" required value="password">
                      <label>Password</label>
                 </div>
 
@@ -52,22 +51,47 @@
               <input type ='hidden' name ="role" value="<%= role %>">
               <div class="input-box">
                 <span class="icon"><ion-icon name="person"></ion-icon></span>
-                <input type="text" required />
+                <input type="text" name="name" required />
                 <label>Full Name</label>
               </div>
       
               <div class="input-box">
                 <span class="icon"><ion-icon name="mail-open"></ion-icon></span>
-                <input type="email" required />
+                <input type="email" name="email" required />
                 <label>Email</label>
               </div>
       
               <div class="input-box">
                 <span class="icon"><ion-icon name="lock-closed"></ion-icon></span>
-                <input type="password" required />
+                <input type="password" name="password" required value="password" />
                 <label>Password</label>
               </div>
-      
+
+              <div>
+                <div class="input-box">
+                  <span class="icon"><ion-icon name="transgender"></ion-icon></span>
+                <input type="text" name ="sexe" required />
+                <label>Sexe</label>
+              </div>
+
+              <div class="input-box">
+                <span class="icon"><ion-icon name="school"></ion-icon></span>
+                <input type="text" name="etablissement" required />
+                <label>etablissement</label>
+              </div>
+              
+              <div class="input-box">
+                <span class="icon"><ion-icon name="book"></ion-icon></span>
+                <input type="text" name="filiere" required />
+                <label>Filiere</label>
+              </div>
+
+              <div class="input-box">
+                <span class="icon"><ion-icon name="calendar"></ion-icon></span>
+                <input type="date" name="dateNaissance" required />
+                <label>dateNaissance</label>
+              </div>
+
               <div class="remembetr-forget">
                 <label><input type="checkbox" /> I agree to the terms</label>
               </div>
