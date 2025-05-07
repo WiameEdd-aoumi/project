@@ -22,11 +22,11 @@ const createToken = User => {
         if (existingUser) {
             return res.status(400).json({ message: 'Email already exists' });
         }
-        const hashedPassword = await bcrypt.hash(password, 10);
+        
         const newUser = new User({
             name,
             email,
-            password: hashedPassword,
+            password,
             role: correctedRole,
             sexe,
             etablissement,
@@ -42,6 +42,8 @@ const createToken = User => {
         res.cookie('jwt', token, { httpOnly: true });
         //save user info to session
         req.session.user = {
+            id: newUser.id,
+            user : newUser,
             email: newUser.email,
             role: newUser.role,
         };
@@ -90,15 +92,22 @@ export const login = async (req, res) => {
         res.cookie('jwt', token, { httpOnly: true });
         //save user info to session
         req.session.user = {
+            id : foundUser.id,
+            user : foundUser,
             email: foundUser.email,
             role: foundUser.role,
         };
         //redirect to appropriate dashboard based on role
-        if (foundUser.role === 'teacher') {
-           return res.redirect('/Tdashboard'); // Redirect to teacher dashboard
-        } else {
-           return res.redirect('/Sdashboard'); // Redirect to student dashboard
-        }
+        return res.status(200).json({
+            message: 'login succesful',
+            role: foundUser.role
+
+        })
+        // if (foundUser.role === 'teacher') {
+        //    return res.redirect('/Tdashboard'); // Redirect to teacher dashboard
+        // } else {
+        //    return res.redirect('/Sdashboard'); // Redirect to student dashboard
+        // }
         //create token and set it in cookie 
         
     }catch (error) {

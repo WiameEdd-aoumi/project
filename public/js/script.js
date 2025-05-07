@@ -37,6 +37,7 @@ loginForm.addEventListener('submit', async (e) => {
         headers: {
           'Content-Type': 'application/json'
         },
+        credentials:'include',
         body: JSON.stringify({ email, password })
       });
       
@@ -51,9 +52,9 @@ loginForm.addEventListener('submit', async (e) => {
       
     
       if (data.role === 'teacher') {
-        window.location.href = 'upload.html';
+        window.location.href = 'Tdashboard';
       } else {
-        window.location.href = 'dashboard.html';
+        window.location.href = 'Sdashboard.html';
       }
     } catch (error) {
       console.error('Login error:', error);

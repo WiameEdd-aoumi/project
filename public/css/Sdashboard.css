@@ -1,0 +1,70 @@
+/* public/css/student-dashboard.css */
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@200;300;400;500;600;700&display=swap");
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100dvh;
+  background: url('../img/exam.jpg') no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 20px 60px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 99;
+}
+
+.logo {
+  font-size: 3em;
+  color: rgb(1, 11, 20);
+  user-select: none;
+}
+
+.navigation {
+  display: flex;
+  gap: 30px;
+}
+
+.navigation a {
+  position: relative;
+  font-size: 1.1em;
+  color: rgb(5, 36, 67);
+  text-decoration: none;
+  font-weight: 500;
+  margin-left: 20px;
+}
+
+.navigation a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  width: 100%;
+  height: 3px;
+  background: #061744;
+  border-radius: 5px;
+  transition: transform .3s;
+  transform: scaleX(0);
+}
+
+.navigation a:hover::after {
+  transform: scaleX(1);
+}
+
+/* Other styles for student dashboard here */

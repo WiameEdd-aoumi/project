@@ -3,12 +3,14 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import expressLayouts from 'express-ejs-layouts';
+import { createExam, upload } from './server/controllers/examController.js'; // Import the multer middleware
 
 import mainRoute from './server/routes/main.js';
 import session from 'express-session';
 import userRoutes from './server/routes/user.js';
 
-
+import examRoutes from './server/routes/exams.js';
+import { Exam } from './server/models/exam.js'; // Import the Exam model
 
 dotenv.config();
 const app = express();
@@ -19,15 +21,15 @@ app.use(session({
 }));
 
 // Middleware
-app.use(cors({
-    origin: 'http://localhost:5000', // Replace with your frontend URL
-    credentials: true, // Allow credentials (cookies) to be sent
-}));
+app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 app.use(expressLayouts);
 app.use(express.urlencoded({ extended: true }));
 app.set('layout', 'layouts/main');
+app.use('/api/exams', examRoutes); // Use the exam routes
+app.use('/uploads', express.static('uploads')); // serve files
+
 
 //set Ejs as view engine
 app.set('view engine', 'ejs');
@@ -47,24 +49,41 @@ app.post('/role', (req, res) => {
     const role = req.body.role;
     res.redirect(`/loginStudent?role=${role}`); // Redirect to login page with selected role
 });
+app.post('/api/exams/create', upload.single('media'),createExam); // Use the createExam function from examController
+
 //login page (dynamic based on role)
 app.get('/loginStudent', (req, res) => {
     const role = req.query.role || 'student'; // Default to 'student' if no role is provided;
     res.render('loginStudent', { role });
 });
+// Example login route for teacher
+app.post('/loginStudent', async (req, res) => {
+    const { email, password } = req.body;
+    const teacher = await User.findOne({ email });
+    if (teacher && bcrypt.compareSync(password, teacher.password)) {
+      req.session.user = teacher; // Store teacher info in session
+      res.redirect('/Tdashboard');  // Redirect to the teacher's dashboard
+    } else {
+      res.status(401).send('Invalid credentials');
+    }
+  });
+  
 
 // teacher dashboard (protected route)
-app.get('/Tdashboard', (req, res) => {
+app.get('/Tdashboard', async (req, res) => {
     if (req.session.user && req.session.user.role === 'teacher') {
-        res.render('Tdashboard', );
+        const exams = await Exam.find({ teacherId: req.session.user._id });
+        res.render('Tdashboard', {user:req.session.user, exams });
     } else {
         res.redirect('/loginStudent?role=teacher'); // Redirect to login if not authenticated
     }
 });
+
 // student dashboard (protected route)
-app.get('/Sdashboard', (req, res) => {
+app.get('/Sdashboard', async (req, res) => {
     if (req.session.user && req.session.user.role === 'student') {
-        res.render('Sdashboard', );
+        const exams = await Exam.find({ studentId: req.session.user._id });
+        res.render('Sdashboard', {user:req.session.user, exams });
     } else {
         res.redirect('/loginStudent?role=student'); // Redirect to login if not authenticated
     }
@@ -81,7 +100,7 @@ mongoose.connect(dbURI)
     });
   })
   .catch(err => console.error(err.message,));
-
+export default app;
 
 //app.use('/api/exams', examRoutes);
 

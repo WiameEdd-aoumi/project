@@ -4,8 +4,13 @@ const examSchema=new mongoose.Schema({
         type:String,
         required:true
     },
-    description:{
+    subject:{
         type:String,
+        required:true
+    },
+    level:{
+        type:String,
+        enum:['1ere année','2eme année','3eme année','4eme année','5eme année'],
         required:true
     },
     date:{
@@ -15,6 +20,19 @@ const examSchema=new mongoose.Schema({
     duration:{
         type:Number,
         required:true
+    },
+    questionsCount:{
+        type:Number,
+        required:true
+    },
+    examType:{
+        type:String,
+        enum:['direct','qcm'],
+        required:true
+    },
+    media:{
+        type:String,
+        required:false
     },
     createdat:{
         type:Date,
@@ -36,7 +54,7 @@ const examSchema=new mongoose.Schema({
     }
     });
     const QuestionSchema=new mongoose.Schema({
-        examid:{
+        examId:{
             type:mongoose.Schema.Types.ObjectId,
             ref:'Exam',
             required:true
@@ -52,23 +70,32 @@ const examSchema=new mongoose.Schema({
         },
         media:{
             type:String,
-            required:true
+            required:false
         },
         options:{
-            type:[String],
-            required:true
+            type:Map,
+            of:String,
+            required:function() {
+                return this.questionType === 'qcm';
+            }
         },
         correctAnswer:{
             type:String,
-            required:true
+            required: function() {
+                return this.questionType === 'qcm';
+            }
         },
         directAnswer:{
             type:String,
-            required:true
+            required:function() {
+                return this.questionType === 'direct';
+            }
         },
         tolerance:{
             type:Number,
-            required:true
+            required:function() {
+                return this.questionType === 'direct';
+            }
         },
         points:{
             type:Number,
@@ -84,7 +111,7 @@ const examSchema=new mongoose.Schema({
         },
     });
     const studentSchema=new mongoose.Schema({
-        examid:{
+        examId:{
             type:mongoose.Schema.Types.ObjectId,
             ref:'Exam',
             required:true
@@ -116,10 +143,11 @@ const examSchema=new mongoose.Schema({
             required:true
         }
     });
-    module.exports={
-    Exam: mongoose.model('Exam', examSchema),
-    Question: mongoose.model('Question', QuestionSchema),
-    Student: mongoose.model('Student', studentSchema)};
+    const Exam = mongoose.model('Exam', examSchema);
+    const Question = mongoose.model('Question', QuestionSchema);
+    const Student = mongoose.model('Student', studentSchema);
 
-    
-    export default mongoose.model('Exam', examSchema);
+export { Exam, Question, Student };
+
+
+   

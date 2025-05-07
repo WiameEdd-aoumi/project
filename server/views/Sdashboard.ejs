@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Student Dashboard</title>
+  <link rel="stylesheet" href="css/Sdashboard.css">
+</head>
+<body>
+  <h1>Welcome, <%= user.name %> (Student)</h1>
+
+  <section>
+    <h2>Your Completed Exams</h2>
+    <% if (exams.length === 0) { %>
+      <p>You have not completed any exams yet.</p>
+    <% } else { %>
+      <table>
+        <thead>
+          <tr>
+            <th>Exam Title</th>
+            <th>Date</th>
+            <th>Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% exams.forEach(record => { %>
+            <tr>
+              <td><%= record.examid.title %></td>
+              <td><%= new Date(record.examid.date).toDateString() %></td>
+              <td><%= record.score %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } %>
+  </section>
+  <div class="exams">
+    <h2>Exams Available</h2>
+    <ul>
+      <% exams.forEach(exam => { %>
+        <li>
+          <a href="<%= exam.accessLink %>">Start Exam: <%= exam.title %></a>
+        </li>
+      <% }) %>
+    </ul>
+  </div>
+  
+</body>
+</html>

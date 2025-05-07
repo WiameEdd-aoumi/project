@@ -1,17 +1,92 @@
-<div class="container">
-    <h2>Upload QCM Exam</h2>
-    <label>Exam Name</label>
-    <input type="text" id="examName">z
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Enseignant</title>
+  <link href="/css/Tdashboard.css" rel="stylesheet">
+</head>
+<body>
 
-    <label>Exam Date</label>
-    <input type="date" id="examDate">
+  <header>
+    <h1>Bienvenue, <%= user.name %> !</h1>
+  </header>
 
-    <label>Duration (minutes)</label>
-    <input type="number" id="examDuration">
+  <nav class="dashboard-nav">
+    <button id="createExamBtn" class="dashboard-btn">
+      <img src="/icons/create-exam-icon.png" alt="Créer un Examen"> Créer un Examen
+    </button>
+    <button id="viewExamsBtn" class="dashboard-btn">
+      <img src="/icons/view-exams-icon.png" alt="Voir les Examens"> Voir les Examens
+    </button>
+  </nav>
 
-    <label>Upload CSV File</label>
-    <input type="file" id="qcmFile" accept=".csv">
+  <!-- Create Exam Section -->
+  <section id="examenFormSection" style="display: none;">
+    <h2>Créer un Examen</h2>
+    <form action="/api/exams/create" id="examForm" method="post" enctype="multipart/form-data">
+      <input type="text" name="title" placeholder="Nom de l'examen" required>
+      <input type="text" name="subject" placeholder="Matière / Sujet" required>
+      <select name="level" required>
+        <option disabled selected>Niveau</option>
+        <option>1ere année</option>
+        <option>2eme année</option>
+        <option>3eme année</option>
+        <option>4eme année</option>
+        <option>5eme année</option>
+      </select>
+      <input type="date" name="date" required>
+      <input type="number" name="duration" placeholder="Durée (en minutes)" required>
+      <input type="number" name="questionsCount" placeholder="Nombre de questions" required>
+      <select name="examType" required>
+        <option disabled selected>Type d'examen</option>
+        <option value="direct">Direct</option>
+        <option value="qcm">QCM</option>
+      </select>
+      <label>Fichier média (image/audio/vidéo)</label>
+      <input type="file" name="media" accept="image/*,audio/*,video/*">
+      <input type="hidden" name="createdby" value="<%= user.id %>">
+      
+      <button type="submit">Créer l'examen</button>
+    </form>
+  </section>
 
-    <button onclick="handleUpload()">Save Exam</button>
-    <p id="successMsg">Exam saved successfully!</p>
-  </div>
+  <!-- Add Questions Section -->
+  <section id="ajouterQuestionsSection" style="display: none;">
+    <h2>Ajouter des Questions</h2>
+    <div id="statutAjout"></div>
+    <form id="questionForm" enctype="multipart/form-data" method="post" action="/api/addQuestion">
+      <select id="questionType" name="questionType" required>
+        <option disabled selected>Type de question</option>
+        <option value="qcm">QCM</option>
+        <option value="direct">Directe</option>
+      </select>
+
+      <input type="text" id="questionText" name="text" placeholder="Texte de la question" required>
+      <label>Média (facultatif)</label>
+      <input type="file" id="media" name="media" accept="image/*,audio/*,video/*">
+
+      <div id="qcmFields" style="display: none;">
+        <input type="text" id="optionA" name="optionA" placeholder="Option A">
+        <input type="text" id="optionB" name="optionB" placeholder="Option B">
+        <input type="text" id="optionC" name="optionC" placeholder="Option C">
+        <input type="text" id="optionD" name="optionD" placeholder="Option D">
+        <input type="text" id="correctAnswer" name="correctAnswer" placeholder="Bonne réponse (A/B/C/D)">
+      </div>
+
+      <div id="directFields" style="display: none;">
+        <input type="text" id="directAnswer" name="directAnswer" placeholder="Réponse directe">
+      </div>
+
+      <input type="number" name="tolerance" placeholder="Tolérance (pour direct)" required>
+      <input type="number" name="points" placeholder="Points" required>
+      <input type="number" name="duration" placeholder="Durée (en secondes)" required>
+      <input type="number" name="order" placeholder="Ordre d'apparition" required>
+    
+      <button type="submit">Ajouter la question</button>
+      <div id="statutAjout"></div>
+    </form>
+  </section>
+
+  <script src="/js/Tdashboard.js"></script>
+</body>
+</html>
