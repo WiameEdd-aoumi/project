@@ -1,5 +1,5 @@
 import express from 'express';
-import { createExam, addQuestion, getExams, startExam, viewScores,upload } from '../controllers/examController.js';
+import { createExam, addQuestion, getExams, startExam, submitExam, viewScores,upload, getPastExams, getUpcomingExams,getStudentScores} from '../controllers/examController.js';
 
 const router = express.Router();
 router.post('/createExam', upload.single('media'), createExam); // Use the multer middleware for file uploads
@@ -15,9 +15,13 @@ router.post('/addQuestion', addQuestion);
 router.get('/list', getExams);
 
 // Route to start an exam (for students)
-router.post('/exam/:link', startExam);
+router.get('/exam/:link', startExam);
+router.get('/upcoming-exams', getUpcomingExams);
+router.get('/past-exams', getPastExams);
+router.get('/scores', getStudentScores);
+router.post('/submit/:examId', submitExam);
 
 // Route for student to view scores
 router.get('/scores', viewScores);
-router.get('/exam/:link', startExam); // Route to start an exam using the link
+
 export default router;

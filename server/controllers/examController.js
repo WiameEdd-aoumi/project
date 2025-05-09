@@ -39,9 +39,9 @@ export const createExam = async (req, res) => {
       examType,
      media,
      createdat: new Date(),
-    createdby: req.session.user.id,
+    createdby: req.session.user._id,
     examId: examId,
-      teacherId: req.session.user.id,
+      teacherId: req.session.user._id,
       accessLink: `/exam/${examId}`, // will be used in frontend
     });
 console.log( exam)
@@ -65,9 +65,9 @@ export const addQuestion = async (req, res) => {
       questionType,
       text,
       media,
-      points,
-      duration,
-      order
+      points:points||10,
+      duration:duration||30,
+      order: order||1
     };
     if (questionType === 'qcm') {
       if (!optionA || !optionB || !optionC || !optionD || !correctAnswer) {
@@ -81,7 +81,7 @@ export const addQuestion = async (req, res) => {
       };
       newQuestion.correctAnswer = correctAnswer;
     } else if (questionType === 'direct') {
-      if (!directAnswer || !tolerance) {
+      if (!directAnswer) {
         return res.status(400).json({ message: 'Please fill all direct question fields' });
       }
       newQuestion.directAnswer = directAnswer;
@@ -92,8 +92,8 @@ export const addQuestion = async (req, res) => {
 
     await question.save();
     const addedCount = await Question.countDocuments({ examId });
-const exam = await Exam.findById(examId);
-const remaining = exam.questionsCount - addedCount;
+   const exam = await Exam.findById(examId);
+   const remaining = exam.questionsCount - addedCount;
 
 res.status(201).json({
   success: true,
@@ -123,56 +123,141 @@ export const getExams = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+//get upcoming exams
+export const getUpcomingExams = async (req, res) => {
+  try {
+      const now = new Date();
+      const exams = await Exam.find({ date: { $gte: now }, teacherId: { $ne: req.session.user._id }, })
+          .select('title subject level date duration examId accessLink');
+      res.json({ success: true, exams });
+  } catch (err) {
+      console.error('Upcoming exams error:', err);
+      res.status(500).json({ success: false, message: err.message });
+  }
+};
+//Get past exams
+export const getPastExams = async (req, res) => {
+    try {
+        const now = new Date();
+        const exams = await Exam.find({ date: { $lt: now }, teacherId: { $ne: req.session.user._id }, })
+            .select('title subject date examId accessLink');
+        res.json({ success: true, exams });
+    } catch (err) {
+        console.error('Past exams error:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+// Get student scores
+export const getStudentScores = async (req, res) => {
+  try {
+      if (!req.session.user || !req.session.user._id) {
+          return res.status(403).json({ success: false, message: 'Unauthorized' });
+      }
+      const scores = await Student.find({ studentId: req.session.user._id })
+          .populate('examId', 'title subject date questionsCount')
+          .select('score endTime answers');
+      res.json({ success: true, scores });
+  } catch (err) {
+      console.error('Student scores error:', err);
+      res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+
 
 // Student starts an exam using the link
 export const startExam = async (req, res) => {
   try {
+    console.log('start exam -request:', req.params, req.query);
+    console.log('start exam - request:', req.params, req.query);
+        if (!req.session.user || req.session.user.role !== 'student') {
+            return res.status(403).json({ success: false, message: 'Please log in as a student to access the exam' });
+        }
     const { link } = req.params;
+    if (!link) {
+      return res.status(400).json({ success: false, message: 'Exam link is missing' });
+  }
     const exam = await Exam.findOne({ accessLink: `/exam/${link}` }).populate('teacherId');
     if (!exam) return res.status(404).json({ success: false, message: 'Exam not found' });
+    //Check if exam date is in the future
+    const now = new Date();
+    if (new Date(exam.date) < now) {
+        return res.status(403).json({ success: false, message: 'This exam has already ended' });
+    }
 
-    const questions = await Question.find({ examId: exam._id }).sort({ order: 1 });
-    res.render('studentExam', { exam, questions, student: req.session.user });
+// record geolocation if provided
+const latitude= req.query.lat;
+const longitude= req.query.lon;
+if (!latitude || !longitude){
+  return res.status(400).json({ success: false, message: 'Geolocation is required' });
+} console.log(`geolocation recorded: ${latitude},${longitude}`);
+
+  const questions = await Question.find({ examId: exam._id }).sort({ order: 1 });
+  if (question.length===0){
+      return res.status(404).json({ success: false, message: 'No questions available for this exam' });
+  }console.log('Questions fetched:', questions); // Debug log
+   res.render('studentExam', { exam, questions, student: req.session.user, intialTime : Date.now(),latitude,
+    longitude,
+      
+    });
   } catch (err) {
+    console.error('start exam error', err)
     res.status(500).json({ success: false, message: err.message });
   }
 };
 
-// Submit exam answers
+// Submit exam answers 
 export const submitExam = async (req, res) => {
   try {
-    const { examId, answers } = req.body;
-
-    const questions = await Question.find({ examId: examId });
+    const { examId } = req.params;
+    const { studentId, answers, latitude, longitude } = req.body;
+    const exam = await Exam.findById(examId).populate('questions');
+    if (!exam) return res.status(404).json({ success: false, message: 'Exam not found' });
     let score = 0;
+    const totalPossiblePoints = exam.questions.reduce((sum, q) => sum + (q.points || 10), 0);
+    const maxScore=100;
 
     // Evaluate score
-    questions.forEach((q, index) => {
-      if (q.questionType === 'qcm' && q.correctAnswer === answers[index]) score += q.points;
-      else if (q.questionType === 'direct' && q.directAnswer.toLowerCase() === answers[index].toLowerCase()) score += q.points;
-    });
+   exam.questions.forEach((question, index) => {
+      if (question.questionType === 'qcm' && question.correctAnswer === answers[index]) {
+        score += ((question.points|| 10)/totalPossiblePoints) * maxScore;
+      }
+      else if (question.questionType === 'direct'){
+        const studentAnswer = answers[index]?.toLowerCase().trim()||'';
+        const correctAnswer = question.directAnswer?.toLowerCase().trim()||'';
+        const tolerance = question.tolerance || 0;
+        if (studentAnswer === correctAnswer || (parseFloat(studentAnswer) && Math.abs(parseFloat(studentAnswer) - parseFloat(correctAnswer)) <= tolerance)) {
+          score += (question.points / totalPossiblePoints) * maxScore;
+        }
+        
+     }
+        });
+        score = Math.round(score);
 
     const studentExam = new Student({
       examId: examId,
-      studentId: req.session.user._id,
+      studentId: req.session.user._id || studentId,
       score,
       status: 'completed',
       answers,
+      latitude,
+      longitude,
       startTime: new Date(),
       endTime: new Date()
     });
 
     await studentExam.save();
-    res.redirect('/Sdashboard');
+    res.json({ success: true, score, message: 'Exam submitted successfully' });
+   //res.redirect('/Sdashboard');
   } catch (err) {
+    console.error('Submit Exam Error:', err);
     res.status(500).json({ success: false, message: err.message });
   }
-};
-
+}; 
 // Student view scores
 export const viewScores = async (req, res) => {
   try {
-    const exams = await Student.find({ studentId: req.session.user._id }).populate('examid');
+    const exams = await Student.find({ studentId: req.session.user._id }).populate('examId');
     res.render('studentScores', { exams });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });

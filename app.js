@@ -10,7 +10,11 @@ import session from 'express-session';
 import userRoutes from './server/routes/user.js';
 
 import examRoutes from './server/routes/exams.js';
-import { Exam } from './server/models/exam.js'; // Import the Exam model
+import { Exam } from './server/models/exam.js'; 
+import User from './server/models/user.js';
+import bcrypt from 'bcryptjs';
+
+// Import the Exam model
 
 dotenv.config();
 const app = express();
@@ -29,7 +33,7 @@ app.use(express.urlencoded({ extended: true }));
 app.set('layout', 'layouts/main');
 app.use('/api/exams', examRoutes); // Use the exam routes
 app.use('/uploads', express.static('uploads')); // serve files
-
+app.use('/', examRoutes); // Direct routes like /exam/:link
 
 //set Ejs as view engine
 app.set('view engine', 'ejs');
@@ -87,6 +91,18 @@ app.get('/Sdashboard', async (req, res) => {
     } else {
         res.redirect('/loginStudent?role=student'); // Redirect to login if not authenticated
     }
+});
+//logout route
+app.get('/logout', (req, res) => {
+  const role = req.session.user ? req.session.user.role : 'student'; // Default to student if role is undefined
+  req.session.destroy(err => {
+      if (err) {
+          console.error('Logout Error:', err);
+          return res.status(500).send('Server error during logout');
+      }
+      console.log('Session destroyed, redirecting to login page with role:', role);
+      res.redirect(`/loginStudent?role=${role}`);
+  });
 });
 
 

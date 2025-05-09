@@ -42,12 +42,14 @@ const createToken = User => {
         res.cookie('jwt', token, { httpOnly: true });
         //save user info to session
         req.session.user = {
-            id: newUser.id,
+            _id: newUser._id,
             user : newUser,
             email: newUser.email,
             role: newUser.role,
         };
        
+        console.log('Session set:', req.session.user);
+
                 //redirect to appropriate dashboard based on role
                 if (newUser.role === 'teacher') {
                    return res.redirect('/Tdashboard'); // Redirect to teacher dashboard
@@ -92,7 +94,7 @@ export const login = async (req, res) => {
         res.cookie('jwt', token, { httpOnly: true });
         //save user info to session
         req.session.user = {
-            id : foundUser.id,
+            _id : foundUser._id,
             user : foundUser,
             email: foundUser.email,
             role: foundUser.role,

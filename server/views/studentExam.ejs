@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam - <%= exam.title %></title>
+    <link rel="stylesheet" href="/css/studentExam.css">
+</head>
+<body>
+    <div class="exam-container">
+        <h2><%= exam.title %></h2>
+        <p>Subject: <%= exam.subject %></p>
+        <p>Time Remaining: <span id="timer">00:00</span></p>
+        <form id="examForm">
+            <input type="hidden" id="examId" value="<%= exam._id %>">
+            <input type="hidden" id="studentId" value="<%= user._id %>">
+            <input type="hidden" id="latitude" value="<%= latitude %>">
+            <input type="hidden" id="longitude" value="<%= longitude %>">
+            <input type="hidden" id="totalQuestions" value="<%= exam.questions.length %>">
+            <input type="hidden" id="examDuration" value="<%= exam.duration %>">
+            <input type="hidden" id="currentQuestionIndex" value="0">
+            <div id="questionContainer"></div>
+        </form>
+    </div>
+    <script src="/js/studentExam.js"></script>
+</body>
+</html>

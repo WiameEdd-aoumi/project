@@ -9,8 +9,8 @@
 
   <header>
     <h1>Bienvenue, <%= user.name %> !</h1>
+    
   </header>
-
   <nav class="dashboard-nav">
     <button id="createExamBtn" class="dashboard-btn">
       <img src="/icons/create-exam-icon.png" alt="Créer un Examen"> Créer un Examen
@@ -18,6 +18,8 @@
     <button id="viewExamsBtn" class="dashboard-btn">
       <img src="/icons/view-exams-icon.png" alt="Voir les Examens"> Voir les Examens
     </button>
+    
+  <a href="/logout" class="logout-btn">Logout</a>
   </nav>
 
   <!-- Create Exam Section -->
@@ -34,9 +36,12 @@
         <option>4eme année</option>
         <option>5eme année</option>
       </select>
-      <input type="date" name="date" required>
-      <input type="number" name="duration" placeholder="Durée (en minutes)" required>
-      <input type="number" name="questionsCount" placeholder="Nombre de questions" required>
+      <label for="date">Date et heure :</label>
+      <input type="datetime-local" id='date' name="date" required>
+      <label for="duration">Durée (en minutes) :</label>
+      <input type="number" id="duration" name="duration" placeholder="Durée (en minutes)" required>
+      <label for="questionsCount">Nombre de questions :</label>
+      <input type="number" id="questionsCount" name="questionsCount" placeholder="Nombre de questions" required>
       <select name="examType" required>
         <option disabled selected>Type d'examen</option>
         <option value="direct">Direct</option>
@@ -44,7 +49,7 @@
       </select>
       <label>Fichier média (image/audio/vidéo)</label>
       <input type="file" name="media" accept="image/*,audio/*,video/*">
-      <input type="hidden" name="createdby" value="<%= user.id %>">
+
       
       <button type="submit">Créer l'examen</button>
     </form>
@@ -60,11 +65,9 @@
         <option value="qcm">QCM</option>
         <option value="direct">Directe</option>
       </select>
-
+      <label for="text">Texte de la question :</label>
       <input type="text" id="questionText" name="text" placeholder="Texte de la question" required>
-      <label>Média (facultatif)</label>
-      <input type="file" id="media" name="media" accept="image/*,audio/*,video/*">
-
+      
       <div id="qcmFields" style="display: none;">
         <input type="text" id="optionA" name="optionA" placeholder="Option A">
         <input type="text" id="optionB" name="optionB" placeholder="Option B">
@@ -76,10 +79,13 @@
       <div id="directFields" style="display: none;">
         <input type="text" id="directAnswer" name="directAnswer" placeholder="Réponse directe">
       </div>
-
+      <label for="tolerance">Tolérance (facultatif) :</label>
       <input type="number" name="tolerance" placeholder="Tolérance (pour direct)" required>
+      <label for="points">Points :</label>
       <input type="number" name="points" placeholder="Points" required>
+      <label for="duration">Durée (en secondes) :</label>
       <input type="number" name="duration" placeholder="Durée (en secondes)" required>
+      <label for="order">Ordre de la question :</label>
       <input type="number" name="order" placeholder="Ordre d'apparition" required>
     
       <button type="submit">Ajouter la question</button>

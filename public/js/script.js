@@ -54,7 +54,7 @@ loginForm.addEventListener('submit', async (e) => {
       if (data.role === 'teacher') {
         window.location.href = 'Tdashboard';
       } else {
-        window.location.href = 'Sdashboard.html';
+        window.location.href = 'Sdashboard';
       }
     } catch (error) {
       console.error('Login error:', error);
