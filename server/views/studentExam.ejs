@@ -3,25 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exam - <%= exam.title %></title>
+    <title>Passer un Examen</title>
     <link rel="stylesheet" href="/css/studentExam.css">
 </head>
 <body>
-    <div class="exam-container">
-        <h2><%= exam.title %></h2>
-        <p>Subject: <%= exam.subject %></p>
-        <p>Time Remaining: <span id="timer">00:00</span></p>
-        <form id="examForm">
-            <input type="hidden" id="examId" value="<%= exam._id %>">
-            <input type="hidden" id="studentId" value="<%= user._id %>">
-            <input type="hidden" id="latitude" value="<%= latitude %>">
-            <input type="hidden" id="longitude" value="<%= longitude %>">
-            <input type="hidden" id="totalQuestions" value="<%= exam.questions.length %>">
-            <input type="hidden" id="examDuration" value="<%= exam.duration %>">
-            <input type="hidden" id="currentQuestionIndex" value="0">
-            <div id="questionContainer"></div>
-        </form>
+    <div class="container">
+        <h1 id="examTitle"></h1>
+        <p id="examDetails"></p>
+        <div id="countdown" style="display: none;"></div>
+        <div id="examContent" style="display: none;">
+            <form id="examForm">
+                <div id="questionsContainer"></div>
+                <button type="button" id="nextBtn" style="display: none;">Suivant</button>
+                <button type="submit" id="submitBtn" style="display: none;">Soumettre</button>
+            </form>
+            <div id="scoreDisplay" style="display: none;"></div>
+            <div id="examEnded" style="display: none;"></div>
+        </div>
     </div>
+    <script>
+        window.examData = {
+            title: "<%= exam.title %>",
+            subject: "<%= exam.subject %>",
+            level: "<%= exam.level %>",
+            duration: <%= exam.duration * 60 * 1000 %>, // Convert minutes to milliseconds
+            date: "<%= exam.date.toISOString() %>",
+            questions: <%- JSON.stringify(questions) %>,
+            examId: "<%= exam._id %>",
+            studentId: "<%= student._id %>",
+            latitude: "<%= latitude %>",
+            longitude: "<%= longitude %>",
+            endTime: "<%= endTime %>"
+        };
+        console.log('window.examData initialized:', window.examData);
+    </script>
     <script src="/js/studentExam.js"></script>
 </body>
 </html>

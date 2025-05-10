@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+const { Schema } = mongoose;
 const examSchema=new mongoose.Schema({
     title:{
         type:String,
@@ -43,6 +44,11 @@ const examSchema=new mongoose.Schema({
         ref:'User',
         required:true
     },
+    examId: {
+        type: String,
+        required: true,
+        unique: true
+    },
     accessLink:{
         type:String,
         unique:true
@@ -51,7 +57,10 @@ const examSchema=new mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:'User',
         required:true
-    }
+    },
+
+    questions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Question' }],
+
     });
     const QuestionSchema=new mongoose.Schema({
         examId:{

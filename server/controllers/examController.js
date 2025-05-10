@@ -91,6 +91,7 @@ export const addQuestion = async (req, res) => {
         
 
     await question.save();
+    await Exam.findByIdAndUpdate(examId, { $push: { questions: question._id } });
     const addedCount = await Question.countDocuments({ examId });
    const exam = await Exam.findById(examId);
    const remaining = exam.questionsCount - addedCount;
@@ -196,7 +197,14 @@ if (!latitude || !longitude){
   if (questions.length===0){
       return res.status(404).json({ success: false, message: 'No questions available for this exam' });
   }console.log('Questions fetched:', questions); // Debug log
-   res.render('studentExam', { exam, questions, student: req.session.user, intialTime : Date.now(),latitude,
+  const initialTime = Date.now();
+        const endTime = new Date(initialTime + (exam.duration * 60 * 1000)).toISOString();
+   res.render('studentExam', { exam,
+     questions, 
+     student: req.session.user,
+      initialTime ,
+      endTime,
+      latitude,
     longitude,
       
     });
@@ -213,26 +221,82 @@ export const submitExam = async (req, res) => {
     const { studentId, answers, latitude, longitude } = req.body;
     const exam = await Exam.findById(examId).populate('questions');
     if (!exam) return res.status(404).json({ success: false, message: 'Exam not found' });
+    if (!exam.questions || exam.questions.length === 0) {
+        return res.status(404).json({ success: false, message: 'No questions found for this exam' });
+    }
     let score = 0;
     const totalPossiblePoints = exam.questions.reduce((sum, q) => sum + (q.points || 10), 0);
     const maxScore=100;
 
     // Evaluate score
-   exam.questions.forEach((question, index) => {
-      if (question.questionType === 'qcm' && question.correctAnswer === answers[index]) {
-        score += ((question.points|| 10)/totalPossiblePoints) * maxScore;
-      }
-      else if (question.questionType === 'direct'){
-        const studentAnswer = answers[index]?.toLowerCase().trim()||'';
-        const correctAnswer = question.directAnswer?.toLowerCase().trim()||'';
-        const tolerance = question.tolerance || 0;
-        if (studentAnswer === correctAnswer || (parseFloat(studentAnswer) && Math.abs(parseFloat(studentAnswer) - parseFloat(correctAnswer)) <= tolerance)) {
-          score += (question.points / totalPossiblePoints) * maxScore;
-        }
+  //  exam.questions.forEach((question, index) => {
+
+  //     if (question.questionType === 'qcm' && question.correctAnswer === answers[index]) {
+  //       score += ((question.points|| 10)/totalPossiblePoints) * maxScore;
+  //     }
+  //     else if (question.questionType === 'direct'){
+  //       const studentAnswer = answers[index]?.toLowerCase().trim()||'';
+  //       const correctAnswer = question.directAnswer?.toLowerCase().trim()||'';
+  //       const tolerance = question.tolerance || 0;
+  //       if (studentAnswer === correctAnswer || (parseFloat(studentAnswer) && Math.abs(parseFloat(studentAnswer) - parseFloat(correctAnswer)) <= tolerance)) {
+  //         score += (question.points / totalPossiblePoints) * maxScore;
+  //       }
         
-     }
-        });
-        score = Math.round(score);
+  //    }
+  //       });
+  //       score = Math.round(score);
+
+  //   const studentExam = new Student({
+  //     examId: examId,
+  //     studentId: req.session.user._id || studentId,
+  //     score,
+  //     status: 'completed',
+  //     answers,
+  //     latitude,
+  //     longitude,
+  //     startTime: new Date(),
+  //     endTime: new Date()
+  //   });
+      // Evaluate score
+    exam.questions.forEach((question, index) => {
+      console.log(`Evaluating question ${index + 1}:`, {
+        questionType: question.questionType,
+        text: question.text,
+        correctAnswer: question.correctAnswer,
+        directAnswer: question.directAnswer,
+        tolerance: question.tolerance,
+        points: question.points
+      });
+      console.log(`Student answer for question ${index + 1}:`, answers[index]);
+      if (question.questionType === 'qcm') {
+        const studentAnswer = answers[index]?.trim();
+        const correctAnswer = question.correctAnswer?.trim();
+        console.log(`QCM comparison - Student: ${studentAnswer}, Correct: ${correctAnswer}`);
+        if (studentAnswer === correctAnswer) {
+          const pointsAwarded = ((question.points || 10) / totalPossiblePoints) * maxScore;
+          score += pointsAwarded;
+          console.log(`QCM score added: ${pointsAwarded}`);
+        } else {
+          console.log('QCM answer incorrect');
+        }
+      } else if (question.questionType === 'direct') {
+        const studentAnswer = answers[index]?.toLowerCase().trim() || '';
+        const correctAnswer = question.directAnswer?.toLowerCase().trim() || '';
+        const tolerance = question.tolerance || 0;
+        console.log(`Direct comparison - Student: "${studentAnswer}", Correct: "${correctAnswer}", Tolerance: ${tolerance}`);
+        const isNumeric = !isNaN(parseFloat(studentAnswer)) && !isNaN(parseFloat(correctAnswer));
+        if (studentAnswer === correctAnswer || 
+            (isNumeric && Math.abs(parseFloat(studentAnswer) - parseFloat(correctAnswer)) <= tolerance)) {
+          const pointsAwarded = (question.points / totalPossiblePoints) * maxScore;
+          score += pointsAwarded;
+          console.log(`Direct score added: ${pointsAwarded}`);
+        } else {
+          console.log('Direct answer incorrect');
+        }
+      }
+    });
+    score = Math.round(score);
+    console.log(`Final calculated score: ${score}`);
 
     const studentExam = new Student({
       examId: examId,

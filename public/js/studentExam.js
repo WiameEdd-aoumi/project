@@ -1,122 +1,188 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const examForm = document.getElementById("examForm");
-    const questionContainer = document.getElementById("questionContainer");
-    const timerDisplay = document.getElementById("timer");
-    const currentQuestionIndexInput = document.getElementById("currentQuestionIndex");
-    const totalQuestionsInput = document.getElementById("totalQuestions");
-    const examDurationInput = document.getElementById("examDuration");
+    console.log('studentExam.js loaded successfully');
 
-    if (!examForm || !questionContainer || !timerDisplay || !currentQuestionIndexInput || !totalQuestionsInput || !examDurationInput) {
-        console.error("Required DOM elements not found");
+    const examTitle = document.getElementById("examTitle");
+    const examDetails = document.getElementById("examDetails");
+    const countdown = document.getElementById("countdown");
+    const examContent = document.getElementById("examContent");
+    const questionsContainer = document.getElementById("questionsContainer");
+    const nextBtn = document.getElementById("nextBtn");
+    const submitBtn = document.getElementById("submitBtn");
+    const examForm = document.getElementById("examForm");
+    const scoreDisplay = document.getElementById("scoreDisplay");
+    const examEnded = document.getElementById("examEnded");
+
+    if (!examTitle || !examDetails || !countdown || !examContent || !questionsContainer || !nextBtn || !submitBtn || !examForm || !scoreDisplay || !examEnded) {
+        console.error('Required DOM elements not found');
+        examTitle.textContent = "Error: Page elements are missing.";
         return;
     }
 
-    const totalQuestions = parseInt(totalQuestionsInput.value, 10) || 0;
-    const examDuration = parseInt(examDurationInput.value, 10) * 60 || 3600; // Default to 1 hour if not set
-    let currentQuestionIndex = parseInt(currentQuestionIndexInput.value, 10) || 0;
-    let answers = JSON.parse(localStorage.getItem("examAnswers")) || new Array(totalQuestions).fill(null);
-    let timeLeft = examDuration;
-    let timer;
+    const examData = window.examData;
+    if (!examData || !examData.questions || !Array.isArray(examData.questions)) {
+        console.error('examData or questions missing:', examData);
+        examTitle.textContent = "Error: Exam data is missing or invalid.";
+        return;
+    }
 
-    // Start timer
-    function startTimer() {
-        timer = setInterval(() => {
+    console.log('Exam data received:', examData);
+
+    examTitle.textContent = `Examen: ${examData.title}`;
+    examDetails.textContent = `Matière: ${examData.subject} | Niveau: ${examData.level} | Durée: ${examData.duration / 60000} minutes`;
+
+    let currentQuestionIndex = 0;
+    let answers = new Array(examData.questions.length).fill('');
+    let timerInterval; // Moved to outer scope
+    const now = Date.now();
+    const examStartTime = new Date(examData.date).getTime();
+    const examEndTime = new Date(examData.endTime).getTime();
+
+    console.log('Current time:', new Date(now).toISOString());
+    console.log('Exam start time:', new Date(examStartTime).toISOString());
+    console.log('Exam end time:', new Date(examEndTime).toISOString());
+
+    if (now < examStartTime) {
+        console.log('Exam not yet started. Showing countdown.');
+        countdown.style.display = 'block';
+        function updateCountdown() {
+            const timeLeft = examStartTime - Date.now();
+            console.log('Time left to start:', timeLeft);
             if (timeLeft <= 0) {
-                clearInterval(timer);
+                console.log('Countdown finished. Starting exam.');
+                clearInterval(countdownInterval);
+                countdown.style.display = 'none';
+                examContent.style.display = 'block';
+                startExam();
+                return;
+            }
+            const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+            countdown.textContent = `Exam starts in: ${hours}h ${minutes}m ${seconds}s`;
+        }
+        const countdownInterval = setInterval(updateCountdown, 1000);
+        updateCountdown();
+        return;
+    } else if (now > examEndTime) {
+        console.log('Exam has ended.');
+        examEnded.style.display = 'block';
+        examEnded.textContent = `Exam ended at: ${new Date(examData.endTime).toLocaleString()}`;
+        return;
+    } else {
+        console.log('Exam is in progress. Starting exam.');
+        examContent.style.display = 'block';
+        startExam();
+    }
+
+    function startExam() {
+        console.log('Starting exam with duration:', examData.duration);
+        const endTime = examEndTime;
+        function updateTimer() {
+            const timeLeft = endTime - Date.now();
+            console.log('Time left in exam:', timeLeft);
+            if (timeLeft <= 0) {
+                console.log('Time is up. Submitting exam.');
+                timer.textContent = "Temps écoulé !";
+                clearInterval(timerInterval);
                 submitExam();
                 return;
             }
-            const minutes = Math.floor(timeLeft / 60);
-            const seconds = timeLeft % 60;
-            timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-            timeLeft--;
-        }, 1000);
-    }
-
-    // Display question
-    function displayQuestion(index) {
-        if (!questions || index < 0 || index >= questions.length) {
-            console.error("Invalid question index or questions data");
-            return;
+            const minutes = Math.floor(timeLeft / (1000 * 60));
+            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+            timer.textContent = `Temps restant: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
         }
-        const question = questions[index];
-        questionContainer.innerHTML = `
-            <h3>Question ${index + 1}: ${question.text}</h3>
-            ${question.questionType === "qcm" ? `
-                <label><input type="radio" name="answer" value="A"> ${question.options.A}</label><br>
-                <label><input type="radio" name="answer" value="B"> ${question.options.B}</label><br>
-                <label><input type="radio" name="answer" value="C"> ${question.options.C}</label><br>
-                <label><input type="radio" name="answer" value="D"> ${question.options.D}</label><br>
-            ` : `
-                <label>Answer: <input type="text" id="directAnswer" name="answer"></label><br>
-            `}
-            <button type="submit">${index === totalQuestions - 1 ? "Submit Exam" : "Next Question"}</button>
-        `;
-    }
+        const timer = document.createElement('div');
+        timer.id = 'timer';
+        examContent.appendChild(timer);
+        timerInterval = setInterval(updateTimer, 1000);
+        updateTimer();
 
-    // Handle form submission
-    examForm.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const selectedAnswer = document.querySelector('input[name="answer"]:checked')?.value || document.getElementById("directAnswer")?.value;
-
-        if (!selectedAnswer) {
-            alert("Please select or enter an answer before proceeding.");
-            return;
-        }
-
-        answers[currentQuestionIndex] = selectedAnswer;
-        localStorage.setItem("examAnswers", JSON.stringify(answers));
-
-        currentQuestionIndex++;
-        currentQuestionIndexInput.value = currentQuestionIndex;
-
-        if (currentQuestionIndex < totalQuestions) {
-            displayQuestion(currentQuestionIndex);
-        } else {
-            clearInterval(timer);
-            submitExam();
-        }
-    });
-
-    // Submit exam
-    function submitExam() {
-        const examId = document.getElementById("examId").value;
-        const studentId = document.getElementById("studentId").value;
-        const latitude = document.getElementById("latitude").value;
-        const longitude = document.getElementById("longitude").value;
-
-        if (!examId || !studentId || !latitude || !longitude) {
-            alert("Missing required data for submission.");
-            return;
-        }
-
-        fetch(`/api/exams/submit/${examId}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                studentId,
-                answers,
-                latitude,
-                longitude,
-            }),
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert(`Exam submitted successfully! Your score: ${data.score} / 100`);
-                    localStorage.removeItem("examAnswers");
-                    window.location.href = "/Sdashboard";
+        function showQuestion(index) {
+            console.log('Showing question index:', index);
+            const question = examData.questions[index];
+            if (!question) {
+                console.error('Question not found at index:', index);
+                questionsContainer.innerHTML = '<p>Error: Question not found.</p>';
+                return;
+            }
+            let questionHTML = `
+                <div class="question">
+                    <p><strong>Question ${index + 1}/${examData.questions.length}:</strong> ${question.text}</p>
+            `;
+            if (question.questionType === "qcm") {
+                if (!question.options) {
+                    console.error('QCM options missing for question:', question);
+                    questionHTML += '<p>Error: QCM options missing.</p>';
                 } else {
-                    alert("Error submitting exam: " + data.message);
+                    questionHTML += `
+                        ${['A', 'B', 'C', 'D'].map(option => `
+                            <label><input type="radio" name="answer${index}" value="${option}" required> ${option}: ${question.options[option] || 'N/A'}</label><br>
+                        `).join('')}
+                    `;
                 }
-            })
-            .catch(err => {
-                console.error("Error submitting exam:", err);
-                alert("Failed to submit exam. Please try again.");
-            });
+            } else if (question.questionType === "direct") {
+                questionHTML += `
+                    <input type="text" name="answer${index}" placeholder="Votre réponse" class="answer-input" required>
+                `;
+            }
+            questionHTML += `</div>`;
+            questionsContainer.innerHTML = questionHTML;
+
+            nextBtn.style.display = index < examData.questions.length - 1 ? "block" : "none";
+            submitBtn.style.display = index === examData.questions.length - 1 ? "block" : "none";
+        }
+
+        showQuestion(currentQuestionIndex);
+
+        nextBtn.addEventListener("click", () => {
+            const answer = document.querySelector(`input[name="answer${currentQuestionIndex}"]:checked`)?.value ||
+                          document.querySelector(`input[name="answer${currentQuestionIndex}"]`)?.value || '';
+            answers[currentQuestionIndex] = answer;
+            console.log('Answer for question', currentQuestionIndex, ':', answer);
+            currentQuestionIndex++;
+            showQuestion(currentQuestionIndex);
+        });
+
+        examForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const answer = document.querySelector(`input[name="answer${currentQuestionIndex}"]:checked`)?.value ||
+                          document.querySelector(`input[name="answer${currentQuestionIndex}"]`)?.value || '';
+            answers[currentQuestionIndex] = answer;
+            console.log('Final answer for question', currentQuestionIndex, ':', answer);
+            console.log('All answers:', answers);
+            submitExam();
+        });
     }
 
-    // Initialize
-    startTimer();
-    displayQuestion(currentQuestionIndex);
+    async function submitExam() {
+        try {
+            console.log('Submitting exam to /api/exams/submit/', examData.examId);
+            const response = await fetch(`/api/exams/submit/${examData.examId}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    studentId: examData.studentId,
+                    answers,
+                    latitude: examData.latitude,
+                    longitude: examData.longitude
+                }),
+                credentials: 'include'
+            });
+            const result = await response.json();
+            if (response.ok) {
+                console.log('Exam submitted successfully:', result);
+                clearInterval(timerInterval); // Stop the timer on successful submission
+                timerInterval = null; // Ensure it's nullified
+                scoreDisplay.style.display = 'block';
+                scoreDisplay.textContent = `Votre score: ${result.score}%`;
+                examForm.style.display = 'none'; // Hide the form to prevent further interaction
+            } else {
+                console.error('Submission failed:', result.message);
+                alert("Erreur lors de la soumission: " + result.message);
+            }
+        } catch (err) {
+            console.error("Submit error:", err);
+            alert("Erreur lors de la soumission de l'examen.");
+        }
+    }
 });
