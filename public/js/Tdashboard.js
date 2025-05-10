@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (response.ok) {
         // Store the exam ID in localStorage for use in adding questions
         localStorage.setItem("currentExamId", result.exam._id);
-        totalQuestions =parseInt(result.exam.questionCount); ///////////// Get total questions from the response
+        totalQuestions =parseInt(result.exam.questionsCount); ///////////// Get total questions from the response
         addedQuestions=0; // Get total questions from the response
 
         alert("Examen créé avec succès !");
@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
           localStorage.removeItem("currentExamId");
           // generate the link ui
           if (result.exam && result.exam.accessLink) {
-            const examLink = `${window.location.origin}/exams/${result.exam.accessLink}`;
+            const examLink = `${result.exam.accessLink}`;
             const linkHTML = `
               <div id="examLinkSection" style="margin-top: 20px;">
                 <p><strong> lien à partager !</strong></p>

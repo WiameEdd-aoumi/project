@@ -23,24 +23,15 @@ document.addEventListener("DOMContentLoaded", () => {
     joinExamForm.addEventListener("submit", (e) => {
         e.preventDefault();
         let examLink = document.getElementById("examLink").value.trim();
-        if (!examLink) {
-            alert("Please enter a valid exam link.");
-            return;
-        }
-
-        // Normalize the exam link to ensure it starts with /exam/
-        if (!examLink.startsWith('/exam/')) {
-            alert("Invalid exam link format. It should be in the format /exam/<examId>");
-            return;
-        }
-
-        // Extract the examId from the link (e.g., /exam/abcd1234 -> abcd1234)
-        const examId = examLink.split('/exam/')[1];
-        if (!examId) {
-            alert("Invalid exam link. No exam ID found.");
-            return;
-        }
-
+        examLink = examLink.replace(/^https?:\/\/[^\/]+/, '').replace(/\/exams\/+/, '/').replace(/\/\/+/, '/');
+    console.log('Normalized examLink:', examLink); // Debug link
+ const match = examLink.match(/^\/exam\/([a-f0-9]+)$/);
+    if (!match) {
+      alert("Invalid exam link format. It should be in the format /exam/<examId>");
+      return;
+    }
+       const examId = match[1];
+    try {
         // Prompt for geolocation
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
@@ -56,10 +47,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     alert("Geolocation is required to join the exam. Please allow location access.");
                 }
             );
-        } else {
-            alert("Geolocation is not supported by your browser.");
-        }
-    });
+        } 
+    } catch (error) {
+        console.error("An error occurred while processing the exam link:", error);
+        alert("An unexpected error occurred. Please try again.");
+    }
 
     upcomingExamsBtn.addEventListener("click", () => {
         joinExamSection.style.display = "none";
@@ -110,4 +102,5 @@ document.addEventListener("DOMContentLoaded", () => {
             })
             .catch(err => console.error("Error fetching past exams:", err));
     }
+    });
 });

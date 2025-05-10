@@ -102,7 +102,7 @@ res.status(201).json({
   remaining,
   total: exam.questionsCount,
   exam:{
-     accessLink: `/exam/${exam.examId}` // you generate this with `/exam/${examId}` 
+     accessLink: exam.accessLink // you generate this with `/exam/${examId}` 
   }
 
 });
@@ -193,7 +193,7 @@ if (!latitude || !longitude){
 } console.log(`geolocation recorded: ${latitude},${longitude}`);
 
   const questions = await Question.find({ examId: exam._id }).sort({ order: 1 });
-  if (question.length===0){
+  if (questions.length===0){
       return res.status(404).json({ success: false, message: 'No questions available for this exam' });
   }console.log('Questions fetched:', questions); // Debug log
    res.render('studentExam', { exam, questions, student: req.session.user, intialTime : Date.now(),latitude,
