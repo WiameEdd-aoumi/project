@@ -38,11 +38,19 @@ app.use('/', examRoutes); // Direct routes like /exam/:link
 //set Ejs as view engine
 app.set('view engine', 'ejs');
 app.set('views', './server/views');
+// Define router for navigation routes
+const router = express.Router();
+router.get('/index', (req, res) => res.render('index'));
+router.get('/about', (req, res) => res.render('about'));
+router.get('/services', (req, res) => res.render('services'));
+router.get('/contact', (req, res) => res.render('contact'));
+
 
 
 
 
 //Routes
+app.use('/', router); //
 app.use('/',mainRoute)
 app.use('/api', userRoutes);
 //home page

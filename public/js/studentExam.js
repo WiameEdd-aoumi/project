@@ -19,9 +19,47 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const examData = window.examData;
-    if (!examData || !examData.questions || !Array.isArray(examData.questions)) {
-        console.error('examData or questions missing:', examData);
-        examTitle.textContent = "Error: Exam data is missing or invalid.";
+    if (!examData) {
+        console.error('examData missing:', examData);
+        examTitle.textContent = "Error: Exam data is missing.";
+        return;
+    }
+
+    // Check if the exam has ended based on the flag from the backend
+    if (examData.examEnded) {
+        console.log('Exam has ended based on server flag.');
+        examEnded.style.display = 'block';
+        examContent.style.display = 'none';
+        examTitle.style.display = 'none'; // Hide the exam title
+        examDetails.style.display = 'none'; // Hide the exam details
+        examEnded.innerHTML = `
+            <div style="
+                background-color: #fff;
+                padding: 30px;
+                border-radius: 10px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                text-align: center;
+                color: #333;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            ">
+                <h2 style="color: #e74c3c; margin-bottom: 20px;">Oops ! L'examen est terminé 🕒</h2>
+                <p style="font-size: 1.1em; margin: 10px 0;">
+                    Cet examen s'est terminé à ${new Date(examData.endTime).toLocaleString()}.
+                </p>
+                <p style="font-size: 1em; margin: 10px 0;">
+                    Si vous avez des questions ou besoin d'assistance, veuillez contacter le <strong>département de votre filière</strong>.
+                </p>
+                <div style="margin-top: 20px;">
+                    <span style="font-size: 1.5em;">📚</span>
+                </div>
+            </div>
+        `;
+        return;
+    }
+
+    if (!examData.questions || !Array.isArray(examData.questions)) {
+        console.error('questions missing:', examData);
+        examTitle.textContent = "Error: Exam questions are missing or invalid.";
         return;
     }
 
@@ -66,7 +104,8 @@ document.addEventListener("DOMContentLoaded", () => {
     } else if (now > examEndTime) {
         console.log('Exam has ended.');
         examEnded.style.display = 'block';
-        examEnded.textContent = `Exam ended at: ${new Date(examData.endTime).toLocaleString()}`;
+        examEnded.textContent = 'Oops, the exam has ended.';
+        examContent.style.display = 'none';
         return;
     } else {
         console.log('Exam is in progress. Starting exam.');
